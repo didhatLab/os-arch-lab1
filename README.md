@@ -5,37 +5,15 @@
 Проект демонстрирует различные подходы к интеграции компонентов в архитектуре Eco OS:
 - **Агрегирование** (Aggregation) - включение компонентов через QueryInterface
 - **Делегирование** (Delegation) - вызов методов через внутренние компоненты
-- **Композиция** (Composition) - создание компонентов через интерфейсную шину
 
 ## Архитектура компонентов
 
-### 🏗️ Структура CEcoLab1
-
-```c
-typedef struct CEcoLab1 {
-    /* Основные интерфейсы */
-    IEcoLab1VTbl* m_pVTblIEcoLab1;
-    uint32_t m_cRef;
-    IEcoMemoryAllocator1* m_pIMem;
-    IEcoSystem1* m_pISys;
-    char_t* m_Name;
-    
-    /* Агрегированные компоненты */
-    IEcoCalculatorX* m_pICalculatorX;  // CalculatorB (Addition/Subtraction)
-    IEcoCalculatorY* m_pICalculatorY;  // CalculatorD (Multiplication/Division)
-    
-    /* Компоненты для делегирования */
-    IEcoCalculatorX* m_pICalculatorC_X;  // CalculatorC (Addition/Subtraction)
-    IEcoCalculatorY* m_pICalculatorC_Y;  // CalculatorC (Multiplication/Division)
-    IEcoCalculatorY* m_pICalculatorE_Y;  // CalculatorE (Multiplication/Division)
-} CEcoLab1;
-```
 
 ### 📊 Компоненты калькулятора
 
 | Компонент | CID | Назначение | Методы | Подход |
 |-----------|-----|------------|--------|--------|
-| **CalculatorA** | `4828F6552E4540E78121EBD220DC360E` | Базовая регистрация | - | Статическая библиотека |
+| **CalculatorA** | `4828F6552E4540E78121EBD220DC360E` | Cложение/вычитание | - | Используется внутри D калькулятора |
 | **CalculatorB** | `AE202E543CE54550899603BD70C62565` | Сложение/Вычитание | Addition, Subtraction | Агрегирование |
 | **CalculatorC** | `4828F6552E4540E78121EBD220DC360E` | Сложение/Вычитание | Addition, Subtraction | Делегирование |
 | **CalculatorD** | `3A8E44677E82475CB4A3719ED8397E61` | Умножение/Деление | Multiplication, Division | Агрегирование |
