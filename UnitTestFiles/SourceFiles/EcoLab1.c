@@ -24,6 +24,7 @@
 #include "IdEcoInterfaceBus1.h"
 #include "IdEcoFileSystemManagement1.h"
 #include "IdEcoLab1.h"
+#include "../../HeaderFiles/CEcoLab1.h"
 #include "../../Eco.CalculatorB/SharedFiles/IdEcoCalculatorB.h"
 #include "../../Eco.CalculatorB/SharedFiles/IEcoCalculatorX.h"
 /* Calculator A (X interface) */
@@ -179,14 +180,23 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
         }
     }
 
-    /* ---------------- Calculator methods via delegation (CalculatorC + CalculatorE) ---------------- */
+    /* ---------------- Calculator methods via direct access to aggregated components ---------------- */
     {
-        int32_t add_result = pIEcoLab1->pVTbl->Addition(pIEcoLab1, 7, 8);
-        int16_t sub_result = pIEcoLab1->pVTbl->Subtraction(pIEcoLab1, 20, 7);
-        int32_t mul_result = pIEcoLab1->pVTbl->Multiplication(pIEcoLab1, 6, 9);
-        int16_t div_result = pIEcoLab1->pVTbl->Division(pIEcoLab1, 24, 4);
-        printf("Delegated CalculatorC+E: 7+8=%d, 20-7=%d, 6*9=%d, 24/4=%d\n", 
-               (int)add_result, (int)sub_result, (int)mul_result, (int)div_result);
+        /* Получаем прямой доступ к структуре CEcoLab1 */
+        CEcoLab1* pCMe = (CEcoLab1*)pIEcoLab1;
+        
+        /* Вызываем методы агрегированных компонентов напрямую */
+        if (pCMe->m_pICalculatorC_X != 0) {
+            int32_t add_result = pCMe->m_pICalculatorC_X->pVTbl->Addition(pCMe->m_pICalculatorC_X, 7, 8);
+            int16_t sub_result = pCMe->m_pICalculatorC_X->pVTbl->Subtraction(pCMe->m_pICalculatorC_X, 20, 7);
+            printf("Dilegate CalculatorC calls: 7+8=%d, 20-7=%d\n", (int)add_result, (int)sub_result);
+        }
+        
+        if (pCMe->m_pICalculatorE_Y != 0) {
+            int32_t mul_result = pCMe->m_pICalculatorE_Y->pVTbl->Multiplication(pCMe->m_pICalculatorE_Y, 6, 9);
+            int16_t div_result = pCMe->m_pICalculatorE_Y->pVTbl->Division(pCMe->m_pICalculatorE_Y, 24, 4);
+            printf("Dilegate CalculatorE calls: 6*9=%d, 24/4=%d\n", (int)mul_result, (int)div_result);
+        }
     }
 
     /* ---------------- Bucket sort tests ---------------- */

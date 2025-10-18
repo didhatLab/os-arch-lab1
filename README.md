@@ -21,18 +21,6 @@
 
 ## Методы интерфейса IEcoLab1
 
-### 🧮 Методы калькулятора (делегирование)
-
-```c
-/* Делегирование к CalculatorC */
-int32_t Addition(int16_t a, int16_t b);      // → CalculatorC
-int16_t Subtraction(int16_t a, int16_t b);   // → CalculatorC
-
-/* Делегирование к CalculatorE */
-int32_t Multiplication(int16_t a, int16_t b); // → CalculatorE
-int16_t Division(int16_t a, int16_t b);       // → CalculatorE
-```
-
 ### 🔄 Методы сортировки
 
 ```c
@@ -50,8 +38,8 @@ int16_t BucketSortLongDouble(long double* array, uint32_t length);
 ```
 EcoLab1 unit tests
 Direct Y: 2*7=14                                    ← Прямой доступ к CalculatorD
-CalculatorX: 3+5=8, 10-3=7                         ← Агрегирование CalculatorB
-CalculatorY: 4*6=24, 15/3=5                        ← Агрегирование CalculatorD
+Deligated CalculatorX: 3+5=8, 10-3=7                         ← Агрегирование CalculatorB
+Deligated CalculatorY: 4*6=24, 15/3=5                        ← Агрегирование CalculatorD
 Delegated CalculatorC+E: 7+8=15, 20-7=13, 6*9=54, 24/4=6  ← Делегирование
 ```
 
@@ -67,8 +55,8 @@ Delegated CalculatorC+E: 7+8=15, 20-7=13, 6*9=54, 24/4=6  ← Делегиров
 2. **Делегирование методов**:
    ```c
    // Прямой вызов методов через CEcoLab1
-   pIEcoLab1->pVTbl->Addition(pIEcoLab1, 7, 8);      // → CalculatorC: 15
-   pIEcoLab1->pVTbl->Multiplication(pIEcoLab1, 6, 9); // → CalculatorE: 54
+   pCMe->m_pICalculatorC_X->pVTbl->Addition(pIEcoLab1, 7, 8);      // → CalculatorC: 15
+   pCMe->m_pICalculatorC_X->pVTbl->Multiplication(pIEcoLab1, 6, 9); // → CalculatorE: 54
    ```
 
 3. **Прямой доступ к компонентам**:

@@ -370,113 +370,9 @@ int16_t ECOCALLMETHOD initCEcoLab1(/*in*/ IEcoLab1Ptr_t me, /* in */ struct IEco
     return result;
 }
 
-/*
- *
- * <сводка>
- *   Функция Addition (делегирование к CalculatorC)
- * </сводка>
- *
- * <описание>
- *   Делегирует вызов метода Addition к CalculatorC
- * </описание>
- *
- */
-static int32_t ECOCALLMETHOD CEcoLab1_Addition(/* in */ IEcoLab1Ptr_t me, /* in */ int16_t a, /* in */ int16_t b) {
-    CEcoLab1* pCMe = (CEcoLab1*)me;
-    
-    /* Проверка указателей */
-    if (me == 0) {
-        return -1; /* ERR_ECO_POINTER */
-    }
-    
-    /* Делегируем вызов к CalculatorC */
-    if (pCMe->m_pICalculatorC_X != 0) {
-        return pCMe->m_pICalculatorC_X->pVTbl->Addition(pCMe->m_pICalculatorC_X, a, b);
-    }
-    
-    return -1; /* CalculatorC not available */
-}
 
-/*
- *
- * <сводка>
- *   Функция Subtraction (делегирование к CalculatorC)
- * </сводка>
- *
- * <описание>
- *   Делегирует вызов метода Subtraction к CalculatorC
- * </описание>
- *
- */
-static int16_t ECOCALLMETHOD CEcoLab1_Subtraction(/* in */ IEcoLab1Ptr_t me, /* in */ int16_t a, /* in */ int16_t b) {
-    CEcoLab1* pCMe = (CEcoLab1*)me;
-    
-    /* Проверка указателей */
-    if (me == 0) {
-        return -1; /* ERR_ECO_POINTER */
-    }
-    
-    /* Делегируем вызов к CalculatorC */
-    if (pCMe->m_pICalculatorC_X != 0) {
-        return pCMe->m_pICalculatorC_X->pVTbl->Subtraction(pCMe->m_pICalculatorC_X, a, b);
-    }
-    
-    return -1; /* CalculatorC not available */
-}
 
-/*
- *
- * <сводка>
- *   Функция Multiplication (делегирование к CalculatorE)
- * </сводка>
- *
- * <описание>
- *   Делегирует вызов метода Multiplication к CalculatorE
- * </описание>
- *
- */
-static int32_t ECOCALLMETHOD CEcoLab1_Multiplication(/* in */ IEcoLab1Ptr_t me, /* in */ int16_t a, /* in */ int16_t b) {
-    CEcoLab1* pCMe = (CEcoLab1*)me;
-    
-    /* Проверка указателей */
-    if (me == 0) {
-        return -1; /* ERR_ECO_POINTER */
-    }
-    
-    /* Делегируем вызов к CalculatorE */
-    if (pCMe->m_pICalculatorE_Y != 0) {
-        return pCMe->m_pICalculatorE_Y->pVTbl->Multiplication(pCMe->m_pICalculatorE_Y, a, b);
-    }
-    
-    return -1; /* CalculatorE not available */
-}
 
-/*
- *
- * <сводка>
- *   Функция Division (делегирование к CalculatorE)
- * </сводка>
- *
- * <описание>
- *   Делегирует вызов метода Division к CalculatorE
- * </описание>
- *
- */
-static int16_t ECOCALLMETHOD CEcoLab1_Division(/* in */ IEcoLab1Ptr_t me, /* in */ int16_t a, /* in */ int16_t b) {
-    CEcoLab1* pCMe = (CEcoLab1*)me;
-    
-    /* Проверка указателей */
-    if (me == 0) {
-        return -1; /* ERR_ECO_POINTER */
-    }
-    
-    /* Делегируем вызов к CalculatorE */
-    if (pCMe->m_pICalculatorE_Y != 0) {
-        return pCMe->m_pICalculatorE_Y->pVTbl->Division(pCMe->m_pICalculatorE_Y, a, b);
-    }
-    
-    return -1; /* CalculatorE not available */
-}
 
 /* Create Virtual Table IEcoLab1 */
 IEcoLab1VTbl g_x277FC00C35624096AFCFC125B94EEC90VTbl = {
@@ -488,11 +384,7 @@ IEcoLab1VTbl g_x277FC00C35624096AFCFC125B94EEC90VTbl = {
     CEcoLab1_BucketSortLong,
     CEcoLab1_BucketSortFloat,
     CEcoLab1_BucketSortDouble,
-    CEcoLab1_BucketSortLongDouble,
-    CEcoLab1_Addition,
-    CEcoLab1_Subtraction,
-    CEcoLab1_Multiplication,
-    CEcoLab1_Division
+    CEcoLab1_BucketSortLongDouble
 };
 
 /*

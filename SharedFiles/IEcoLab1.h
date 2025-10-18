@@ -50,12 +50,6 @@ typedef struct IEcoLab1VTbl {
     int16_t (ECOCALLMETHOD *BucketSortDouble)(/* in */ IEcoLab1Ptr_t me, /* in,out */ double* array, /* in */ uint32_t length);
     int16_t (ECOCALLMETHOD *BucketSortLongDouble)(/* in */ IEcoLab1Ptr_t me, /* in,out */ long double* array, /* in */ uint32_t length);
 
-    /* Calculator methods (delegated to CalculatorC) */
-    int32_t (ECOCALLMETHOD *Addition)(/* in */ IEcoLab1Ptr_t me, /* in */ int16_t a, /* in */ int16_t b);
-    int16_t (ECOCALLMETHOD *Subtraction)(/* in */ IEcoLab1Ptr_t me, /* in */ int16_t a, /* in */ int16_t b);
-    int32_t (ECOCALLMETHOD *Multiplication)(/* in */ IEcoLab1Ptr_t me, /* in */ int16_t a, /* in */ int16_t b);
-    int16_t (ECOCALLMETHOD *Division)(/* in */ IEcoLab1Ptr_t me, /* in */ int16_t a, /* in */ int16_t b);
-
 } IEcoLab1VTbl, *IEcoLab1VTblPtr;
 
 interface IEcoLab1 {
