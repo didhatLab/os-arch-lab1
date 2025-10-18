@@ -24,6 +24,17 @@
 #include "IdEcoInterfaceBus1.h"
 #include "IdEcoFileSystemManagement1.h"
 #include "IdEcoLab1.h"
+#include "../../Eco.CalculatorB/SharedFiles/IdEcoCalculatorB.h"
+#include "../../Eco.CalculatorB/SharedFiles/IEcoCalculatorX.h"
+/* Calculator A (X interface) */
+#include "../../Eco.CalculatorA/SharedFiles/IdEcoCalculatorA.h"
+/* Calculator D (Y interface) */
+#include "../../Eco.CalculatorD/SharedFiles/IdEcoCalculatorD.h"
+#include "../../Eco.CalculatorD/SharedFiles/IEcoCalculatorY.h"
+/* Calculator C (delegation) */
+#include "../../Eco.CalculatorC/SharedFiles/IdEcoCalculatorC.h"
+/* Calculator E (delegation) */
+#include "../../Eco.CalculatorE/SharedFiles/IdEcoCalculatorE.h"
 #include "stdio.h"
 
 /*
@@ -50,6 +61,7 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
     char_t* copyName = 0;
     /* Указатель на тестируемый интерфейс */
     IEcoLab1* pIEcoLab1 = 0;
+    IEcoCalculatorX* pIX = 0;
 
     /* Проверка и создание системного интрефейса */
     if (pISys == 0) {
@@ -73,10 +85,49 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
         /* Освобождение в случае ошибки */
         goto Release;
     }
+    /* Регистрация статического компонента калькулятора B */
+    result = pIBus->pVTbl->RegisterComponent(pIBus, &CID_EcoCalculatorB, (IEcoUnknown*)GetIEcoComponentFactoryPtr_AE202E543CE54550899603BD70C62565);
+    if (result != 0 ) {
+        goto Release;
+    }
+    /* Регистрация статического компонента калькулятора A */
+    result = pIBus->pVTbl->RegisterComponent(pIBus, &CID_EcoCalculatorA, (IEcoUnknown*)GetIEcoComponentFactoryPtr_4828F6552E4540E78121EBD220DC360E);
+    if (result != 0 ) {
+        goto Release;
+    }
+    /* Регистрация статического компонента калькулятора D */
+    result = pIBus->pVTbl->RegisterComponent(pIBus, &CID_EcoCalculatorD, (IEcoUnknown*)GetIEcoComponentFactoryPtr_3A8E44677E82475CB4A3719ED8397E61);
+    if (result != 0 ) {
+        goto Release;
+    }
+    /* Регистрация статического компонента калькулятора C */
+    result = pIBus->pVTbl->RegisterComponent(pIBus, &CID_EcoCalculatorC, (IEcoUnknown*)GetIEcoComponentFactoryPtr_4828F6552E4540E78121EBD220DC360E);
+    if (result != 0 ) {
+        goto Release;
+    }
+    /* Регистрация статического компонента калькулятора E */
+    result = pIBus->pVTbl->RegisterComponent(pIBus, &CID_EcoCalculatorE, (IEcoUnknown*)GetIEcoComponentFactoryPtr_872FEF1DE3314B87AD44D1E7C232C2F0);
+    if (result != 0 ) {
+        goto Release;
+    }
 #endif
+
+    /* Динамическая загрузка не используется: фабрика калькулятора регистрируется статически */
+    /* Быстрая проверка: можем ли получить IEcoCalculatorY напрямую */
+    {
+        IEcoCalculatorY* pIYcheck = 0;
+        int16_t rc = pIBus->pVTbl->QueryComponent(pIBus, &CID_EcoCalculatorD, 0, &IID_IEcoCalculatorY, (void**)&pIYcheck);
+        if (rc == 0 && pIYcheck != 0) {
+            int32_t mul = pIYcheck->pVTbl->Multiplication(pIYcheck, 2, 7);
+            printf("Direct Y: 2*7=%d\n", (int)mul);
+            pIYcheck->pVTbl->Release(pIYcheck);
+        } else {
+            printf("Direct Y: QueryComponent failed\n");
+        }
+    }
+
     /* Получение интерфейса управления памятью */
     result = pIBus->pVTbl->QueryComponent(pIBus, &CID_EcoMemoryManager1, 0, &IID_IEcoMemoryAllocator1, (void**) &pIMem);
-
     /* Проверка */
     if (result != 0 || pIMem == 0) {
         /* Освобождение системного интерфейса в случае ошибки */
@@ -98,6 +149,45 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
 
 
     result = pIEcoLab1->pVTbl->MyFunction(pIEcoLab1, name, &copyName);
+
+    /* ---------------- Calculator X tests (Addition/Subtraction) ---------------- */
+    {
+        int16_t rqi = pIEcoLab1->pVTbl->QueryInterface(pIEcoLab1, &IID_IEcoCalculatorX, (void**)&pIX);
+        if (rqi == 0 && pIX != 0) {
+            int32_t sum = pIX->pVTbl->Addition(pIX, 3, 5);
+            int16_t diff = pIX->pVTbl->Subtraction(pIX, 10, 3);
+            printf("CalculatorX: 3+5=%d, 10-3=%d\n", (int)sum, (int)diff);
+            pIX->pVTbl->Release(pIX);
+            pIX = 0;
+        } else {
+            printf("CalculatorX not available (QueryInterface failed)\n");
+        }
+    }
+
+    /* ---------------- Calculator Y tests (Multiplication/Division) ---------------- */
+    {
+        IEcoCalculatorY* pIY = 0;
+        int16_t rqiY = pIEcoLab1->pVTbl->QueryInterface(pIEcoLab1, &IID_IEcoCalculatorY, (void**)&pIY);
+        if (rqiY == 0 && pIY != 0) {
+            int32_t mul = pIY->pVTbl->Multiplication(pIY, 4, 6);
+            int16_t div = pIY->pVTbl->Division(pIY, 15, 3);
+            printf("CalculatorY: 4*6=%d, 15/3=%d\n", (int)mul, (int)div);
+            pIY->pVTbl->Release(pIY);
+            pIY = 0;
+        } else {
+            printf("CalculatorY not available (QueryInterface failed)\n");
+        }
+    }
+
+    /* ---------------- Calculator methods via delegation (CalculatorC + CalculatorE) ---------------- */
+    {
+        int32_t add_result = pIEcoLab1->pVTbl->Addition(pIEcoLab1, 7, 8);
+        int16_t sub_result = pIEcoLab1->pVTbl->Subtraction(pIEcoLab1, 20, 7);
+        int32_t mul_result = pIEcoLab1->pVTbl->Multiplication(pIEcoLab1, 6, 9);
+        int16_t div_result = pIEcoLab1->pVTbl->Division(pIEcoLab1, 24, 4);
+        printf("Delegated CalculatorC+E: 7+8=%d, 20-7=%d, 6*9=%d, 24/4=%d\n", 
+               (int)add_result, (int)sub_result, (int)mul_result, (int)div_result);
+    }
 
     /* ---------------- Bucket sort tests ---------------- */
     {

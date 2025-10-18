@@ -1,0 +1,95 @@
+ifeq ($(TARGET), 1)
+OUT_TARGET = lib4828F6552E4540E78121EBD220DC360E.a
+ifeq ($(DEBUG), 1)
+CONFIG_TARGET = StaticDebug
+CCFLAGS_TARGET = -Wall -O3 -g -DECO_LIB
+LDFLAGS_TARGET =
+else
+CONFIG_TARGET = StaticRelease
+CCFLAGS_TARGET = -O3 -DECO_LIB
+LDFLAGS_TARGET =
+endif
+else
+OUT_TARGET = 4828F6552E4540E78121EBD220DC360E.so
+ifeq ($(DEBUG), 1)
+CONFIG_TARGET = DynamicDebug
+CCFLAGS_TARGET = -Wall -O3 -fPIC -g -DECO_DLL
+LDFLAGS_TARGET = -shared
+else
+CONFIG_TARGET = DynamicRelease
+CCFLAGS_TARGET = -O3 -fPIC -DECO_DLL
+LDFLAGS_TARGET = -shared
+endif
+endif
+
+# source files
+SRC = \
+../../../Eco.CalculatorC/SourceFiles/CEcoCalculatorC.c \
+../../../Eco.CalculatorC/SourceFiles/CEcoCalculatorCFactory.c
+
+# include directories
+INCLUDES = \
+-I ../../../Eco.CalculatorC/HeaderFiles \
+-I ../../../Eco.CalculatorC/SharedFiles \
+-I $(ECO_FRAMEWORK)/Eco.Core1/SharedFiles \
+-I $(ECO_FRAMEWORK)/Eco.InterfaceBus1/SharedFiles \
+-I $(ECO_FRAMEWORK)/Eco.MemoryManager1/SharedFiles
+
+OBJ = $(SRC:.c=.o)
+
+OUT = $(OUT_TARGET)
+OUT_DIR = ../../../BuildFiles/Linux/x86_64/$(CONFIG_TARGET)
+
+# C++ compiler flags (-g -O2 -Wall)
+CCFLAGS = $(CCFLAGS_TARGET) -DECO_LINUX -DECO_X86_64 -DUGUID_UTILITY
+
+# compiler
+GNU =
+CC = gcc
+AR = gcc-ar
+
+# libraries
+LIBS_TARGET = 
+
+# default target
+all: $(OUT_DIR)/$(OUT)
+
+# create output directory
+$(OUT_DIR):
+	mkdir -p $(OUT_DIR)
+
+# build target
+$(OUT_DIR)/$(OUT): $(OUT_DIR) $(OBJ)
+ifeq ($(TARGET), 1)
+	$(AR) rcs $(OUT_DIR)/$(OUT) $(OBJ)
+else
+	$(CC) $(LDFLAGS_TARGET) -o $(OUT_DIR)/$(OUT) $(OBJ) $(LIBS_TARGET)
+endif
+	rm $(OBJ)
+
+# compile source files
+%.o: %.c
+	$(CC) $(INCLUDES) $(CCFLAGS) -c $< -o $@
+
+# clean target
+clean:
+	rm -f $(OBJ)
+	rm -f $(OUT_DIR)/$(OUT)
+
+# help target
+help:
+	@echo "Available targets:"
+	@echo "  all     - Build the target (default)"
+	@echo "  clean   - Remove generated files"
+	@echo "  help    - Show this help message"
+	@echo ""
+	@echo "Variables:"
+	@echo "  TARGET  - Build target (1=static, 0=dynamic)"
+	@echo "  DEBUG   - Debug build (1=debug, 0=release)"
+	@echo "  CONFIG  - Configuration (Debug/Release)"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make TARGET=1 CONFIG=Debug   - Build static debug"
+	@echo "  make TARGET=1 CONFIG=Release - Build static release"
+	@echo "  make TARGET=0 CONFIG=Debug   - Build dynamic debug"
+	@echo "  make TARGET=0 CONFIG=Release - Build dynamic release"

@@ -23,6 +23,15 @@
 #include "IEcoLab1.h"
 #include "IEcoSystem1.h"
 #include "IdEcoMemoryManager1.h"
+/* Aggregated calculator interface */
+#include "../Eco.CalculatorB/SharedFiles/IEcoCalculatorX.h"
+/* Aggregated calculator Y interface */
+#include "../Eco.CalculatorD/SharedFiles/IEcoCalculatorY.h"
+/* CalculatorC interfaces for delegation */
+#include "../Eco.CalculatorC/SharedFiles/IEcoCalculatorX.h"
+#include "../Eco.CalculatorC/SharedFiles/IEcoCalculatorY.h"
+/* CalculatorE interfaces for delegation */
+#include "../Eco.CalculatorE/SharedFiles/IEcoCalculatorY.h"
 
 typedef struct CEcoLab1 {
 
@@ -41,6 +50,16 @@ typedef struct CEcoLab1 {
 
     /* Данные экземпляра */
     char_t* m_Name;
+
+    /* Агрегированный интерфейс калькулятора (сложение/вычитание) */
+    IEcoCalculatorX* m_pICalculatorX;
+    /* Агрегированный интерфейс калькулятора (умножение/деление) */
+    IEcoCalculatorY* m_pICalculatorY;
+    /* CalculatorC для делегирования методов */
+    IEcoCalculatorX* m_pICalculatorC_X;
+    IEcoCalculatorY* m_pICalculatorC_Y;
+    /* CalculatorE для делегирования методов умножения и деления */
+    IEcoCalculatorY* m_pICalculatorE_Y;
 
 } CEcoLab1, *CEcoLab1Ptr;
 
