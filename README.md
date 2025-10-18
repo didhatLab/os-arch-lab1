@@ -38,8 +38,8 @@ int16_t BucketSortLongDouble(long double* array, uint32_t length);
 ```
 EcoLab1 unit tests
 Direct Y: 2*7=14                                    ← Прямой доступ к CalculatorD
-Deligated CalculatorX: 3+5=8, 10-3=7                         ← Агрегирование CalculatorB
-Deligated CalculatorY: 4*6=24, 15/3=5                        ← Агрегирование CalculatorD
+CalculatorX: 3+5=8, 10-3=7                         ← Агрегирование CalculatorB
+CalculatorY: 4*6=24, 15/3=5                        ← Агрегирование CalculatorD
 Delegated CalculatorC+E: 7+8=15, 20-7=13, 6*9=54, 24/4=6  ← Делегирование
 ```
 
