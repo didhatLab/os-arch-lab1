@@ -24,7 +24,8 @@ endif
 
 # source files.
 SRC = \
-../../../UnitTestFiles/SourceFiles/EcoLab1.c
+../../../UnitTestFiles/SourceFiles/EcoLab1.c \
+../../../UnitTestFiles/SourceFiles/CEcoLab1Sink.c
 
 
 # include directories
@@ -35,7 +36,8 @@ INCLUDES = \
 -I $(ECO_FRAMEWORK)/Eco.Core1/SharedFiles \
 -I $(ECO_FRAMEWORK)/Eco.InterfaceBus1/SharedFiles \
 -I $(ECO_FRAMEWORK)/Eco.FileSystemManagement1/SharedFiles \
--I $(ECO_FRAMEWORK)/Eco.MemoryManager1/SharedFiles
+-I $(ECO_FRAMEWORK)/Eco.MemoryManager1/SharedFiles \
+-I $(ECO_FRAMEWORK)/Eco.List1/SharedFiles
 
 # libraries directories
 LIB_DIR = \
@@ -43,7 +45,8 @@ LIB_DIR = \
 -L $(ECO_FRAMEWORK)/Eco.InterfaceBus1/BuildFiles/Linux/x86_64/StaticRelease \
 -L $(ECO_FRAMEWORK)/Eco.FileSystemManagement1/BuildFiles/Linux/x86_64/StaticRelease \
 -L $(ECO_FRAMEWORK)/Eco.MemoryManager1/BuildFiles/Linux/x86_64/StaticRelease \
--L $(ECO_FRAMEWORK)/Eco.System1/BuildFiles/Linux/x86_64/StaticRelease
+-L $(ECO_FRAMEWORK)/Eco.System1/BuildFiles/Linux/x86_64/StaticRelease \
+-L $(ECO_FRAMEWORK)/Eco.List1/BuildFiles/Linux/x86_64/StaticRelease
 
 OBJ = $(SRC:.c=.o)
 
@@ -65,7 +68,7 @@ LIBS_TARGET=
 endif
 
 # library paths
-LIBS = $(LIB_DIR) -lX11 -lm -lc -lgcc -ldl -l00000000000000000000000053595333 -l00000000000000000000000042757331 -l0000000000000000000000004D656D31 -l00000000000000000000000046534D31 $(LIBS_TARGET) -lGL
+LIBS = $(LIB_DIR) -lX11 -lm -lc -lgcc -ldl -l00000000000000000000000053595333 -l00000000000000000000000042757331 -l0000000000000000000000004D656D31 -l00000000000000000000000046534D31 -l53884AFC93C448ECAA929C8D3A562281 $(LIBS_TARGET) -lGL
 
 # compile flags
 LDFLAGS = $(LDFLAGS_TARGET) $(LIBS)

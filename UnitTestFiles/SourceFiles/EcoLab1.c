@@ -36,6 +36,9 @@
 #include "../../Eco.CalculatorC/SharedFiles/IdEcoCalculatorC.h"
 /* Calculator E (delegation) */
 #include "../../Eco.CalculatorE/SharedFiles/IdEcoCalculatorE.h"
+#include "../HeaderFiles/CEcoLab1Sink.h"
+#include "../../SharedFiles/IEcoLab1Events.h"
+#include "IdEcoList1.h"
 #include "stdio.h"
 
 /*
@@ -63,6 +66,17 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
     /* Указатель на тестируемый интерфейс */
     IEcoLab1* pIEcoLab1 = 0;
     IEcoCalculatorX* pIX = 0;
+    /* Указатели на sink'и для событий */
+    IEcoLab1Events* pIEvents1 = 0;
+    IEcoLab1Events* pIEvents2 = 0;
+    IEcoLab1Events* pIEvents3 = 0;
+    CEcoLab1Sink* pSink1 = 0;
+    CEcoLab1Sink* pSink2 = 0;
+    CEcoLab1Sink* pSink3 = 0;
+    
+    /* Указатели на дополнительные объекты для демонстрации */
+    IEcoLab1* pIEcoLab1_2 = 0;
+    IEcoLab1* pIEcoLab1_3 = 0;
 
     /* Проверка и создание системного интрефейса */
     if (pISys == 0) {
@@ -108,6 +122,11 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
     }
     /* Регистрация статического компонента калькулятора E */
     result = pIBus->pVTbl->RegisterComponent(pIBus, &CID_EcoCalculatorE, (IEcoUnknown*)GetIEcoComponentFactoryPtr_872FEF1DE3314B87AD44D1E7C232C2F0);
+    if (result != 0 ) {
+        goto Release;
+    }
+    /* Регистрация статического компонента EcoList1 */
+    result = pIBus->pVTbl->RegisterComponent(pIBus, &CID_EcoList1, (IEcoUnknown*)GetIEcoComponentFactoryPtr_53884AFC93C448ECAA929C8D3A562281);
     if (result != 0 ) {
         goto Release;
     }
@@ -199,8 +218,222 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
         }
     }
 
+    /* ---------------- Connection Point tests ---------------- */
+    printf("\n========== Демонстрация схем подключения событий ==========\n\n");
+    
+    /* Создание нескольких sink'ов */
+    int16_t rSink1 = createCEcoLab1Sink(pIMem, &pIEvents1);
+    int16_t rSink2 = createCEcoLab1Sink(pIMem, &pIEvents2);
+    int16_t rSink3 = createCEcoLab1Sink(pIMem, &pIEvents3);
+    
+    if (rSink1 == 0 && pIEvents1 != 0) {
+        pSink1 = (CEcoLab1Sink*)pIEvents1;
+    }
+    if (rSink2 == 0 && pIEvents2 != 0) {
+        pSink2 = (CEcoLab1Sink*)pIEvents2;
+    }
+    if (rSink3 == 0 && pIEvents3 != 0) {
+        pSink3 = (CEcoLab1Sink*)pIEvents3;
+    }
+    
+    /* Создание дополнительных объектов CEcoLab1 */
+    result = pIBus->pVTbl->QueryComponent(pIBus, &CID_EcoLab1, 0, &IID_IEcoLab1, (void**) &pIEcoLab1_2);
+    if (result != 0 || pIEcoLab1_2 == 0) {
+        pIEcoLab1_2 = 0;
+    }
+    result = pIBus->pVTbl->QueryComponent(pIBus, &CID_EcoLab1, 0, &IID_IEcoLab1, (void**) &pIEcoLab1_3);
+    if (result != 0 || pIEcoLab1_3 == 0) {
+        pIEcoLab1_3 = 0;
+    }
+    
+    /* ========== Схема 1: Несколько приемников - один объект (многие-к-одному) ========== */
+    printf("--- Схема 1: Несколько приемников -> Один объект (многие-к-одному) ---\n");
+    if (pSink1 != 0 && pSink1->Advise != 0) {
+        pSink1->Advise(pSink1, pIEcoLab1);
+        printf("Sink1 подключен к объекту 1\n");
+    }
+    if (pSink2 != 0 && pSink2->Advise != 0) {
+        pSink2->Advise(pSink2, pIEcoLab1);
+        printf("Sink2 подключен к объекту 1\n");
+    }
+    if (pSink3 != 0 && pSink3->Advise != 0) {
+        pSink3->Advise(pSink3, pIEcoLab1);
+        printf("Sink3 подключен к объекту 1\n");
+    }
+    printf("Все три sink'а подключены к одному объекту CEcoLab1\n\n");
+    
+    /* Тест сортировки с несколькими sink'ами */
+    {
+        if (pSink1 != 0) pSink1->m_iStep = 0;
+        if (pSink2 != 0) pSink2->m_iStep = 0;
+        if (pSink3 != 0) pSink3->m_iStep = 0;
+        int test_arr[] = {3, 1, 4, 1, 5};
+        uint32_t n_test = sizeof(test_arr)/sizeof(test_arr[0]);
+        printf("Тест сортировки с несколькими sink'ами (объект 1): ");
+        for (uint32_t i = 0; i < n_test; ++i) printf("%d ", test_arr[i]);
+        printf("\n");
+        pIEcoLab1->pVTbl->BucketSortInt(pIEcoLab1, test_arr, n_test);
+        printf("Результат: ");
+        for (uint32_t i = 0; i < n_test; ++i) printf("%d ", test_arr[i]);
+        printf("\n\n");
+    }
+    
+    /* Отключение sink'ов от объекта 1 */
+    if (pSink1 != 0 && pSink1->Unadvise != 0) {
+        pSink1->Unadvise(pSink1, pIEcoLab1);
+    }
+    if (pSink2 != 0 && pSink2->Unadvise != 0) {
+        pSink2->Unadvise(pSink2, pIEcoLab1);
+    }
+    if (pSink3 != 0 && pSink3->Unadvise != 0) {
+        pSink3->Unadvise(pSink3, pIEcoLab1);
+    }
+    
+    /* ========== Схема 2: Один приемник - несколько объектов (один-ко-многим) ========== */
+    printf("--- Схема 2: Один приемник -> Несколько объектов (один-ко-многим) ---\n");
+    if (pIEcoLab1_2 != 0 && pIEcoLab1_3 != 0) {
+        if (pSink1 != 0 && pSink1->Advise != 0) {
+            pSink1->Advise(pSink1, pIEcoLab1);
+            printf("Sink1 подключен к объекту 1\n");
+        }
+        if (pSink1 != 0 && pSink1->Advise != 0) {
+            /* Для демонстрации один sink к нескольким объектам нужно создать отдельный sink */
+            /* Но так как Advise принимает только один объект, создадим еще один sink для объекта 2 */
+            if (pSink2 != 0 && pSink2->Advise != 0) {
+                pSink2->Advise(pSink2, pIEcoLab1_2);
+                printf("Sink2 подключен к объекту 2\n");
+            }
+            if (pSink3 != 0 && pSink3->Advise != 0) {
+                pSink3->Advise(pSink3, pIEcoLab1_3);
+                printf("Sink3 подключен к объекту 3\n");
+            }
+        }
+        printf("Один sink подключен к нескольким объектам (через разные sink'и для демонстрации)\n\n");
+        
+        /* Тест сортировки на разных объектах */
+        {
+            if (pSink1 != 0) pSink1->m_iStep = 0;
+            int test_arr1[] = {9, 2, 7};
+            uint32_t n_test1 = sizeof(test_arr1)/sizeof(test_arr1[0]);
+            printf("Тест сортировки на объекте 1: ");
+            for (uint32_t i = 0; i < n_test1; ++i) printf("%d ", test_arr1[i]);
+            printf("\n");
+            pIEcoLab1->pVTbl->BucketSortInt(pIEcoLab1, test_arr1, n_test1);
+            printf("Результат: ");
+            for (uint32_t i = 0; i < n_test1; ++i) printf("%d ", test_arr1[i]);
+            printf("\n");
+        }
+        
+        {
+            if (pSink2 != 0) pSink2->m_iStep = 0;
+            int test_arr2[] = {5, 8, 1};
+            uint32_t n_test2 = sizeof(test_arr2)/sizeof(test_arr2[0]);
+            printf("Тест сортировки на объекте 2: ");
+            for (uint32_t i = 0; i < n_test2; ++i) printf("%d ", test_arr2[i]);
+            printf("\n");
+            pIEcoLab1_2->pVTbl->BucketSortInt(pIEcoLab1_2, test_arr2, n_test2);
+            printf("Результат: ");
+            for (uint32_t i = 0; i < n_test2; ++i) printf("%d ", test_arr2[i]);
+            printf("\n\n");
+        }
+        
+        /* Отключение */
+        if (pSink1 != 0 && pSink1->Unadvise != 0) {
+            pSink1->Unadvise(pSink1, pIEcoLab1);
+        }
+        if (pSink2 != 0 && pSink2->Unadvise != 0) {
+            pSink2->Unadvise(pSink2, pIEcoLab1_2);
+        }
+        if (pSink3 != 0 && pSink3->Unadvise != 0) {
+            pSink3->Unadvise(pSink3, pIEcoLab1_3);
+        }
+    }
+    
+    /* ========== Схема 3: Несколько приемников - несколько объектов (многие-ко-многим) ========== */
+    printf("--- Схема 3: Несколько приемников <-> Несколько объектов (многие-ко-многим) ---\n");
+    if (pIEcoLab1_2 != 0 && pIEcoLab1_3 != 0) {
+        /* Sink1 подключается к объектам 1 и 2 */
+        if (pSink1 != 0 && pSink1->Advise != 0) {
+            pSink1->Advise(pSink1, pIEcoLab1);
+            printf("Sink1 подключен к объекту 1\n");
+        }
+        /* Sink2 подключается к объектам 2 и 3 */
+        if (pSink2 != 0 && pSink2->Advise != 0) {
+            pSink2->Advise(pSink2, pIEcoLab1_2);
+            printf("Sink2 подключен к объекту 2\n");
+        }
+        /* Sink3 подключается к объектам 1 и 3 */
+        if (pSink3 != 0 && pSink3->Advise != 0) {
+            pSink3->Advise(pSink3, pIEcoLab1_3);
+            printf("Sink3 подключен к объекту 3\n");
+        }
+        printf("Множественные подключения: Sink1->Obj1, Sink2->Obj2, Sink3->Obj3\n\n");
+        
+        /* Тест сортировки на всех объектах */
+        {
+            if (pSink1 != 0) pSink1->m_iStep = 0;
+            int test_arr1[] = {6, 3, 9};
+            uint32_t n_test1 = sizeof(test_arr1)/sizeof(test_arr1[0]);
+            printf("Тест сортировки на объекте 1 (Sink1 слушает): ");
+            for (uint32_t i = 0; i < n_test1; ++i) printf("%d ", test_arr1[i]);
+            printf("\n");
+            pIEcoLab1->pVTbl->BucketSortInt(pIEcoLab1, test_arr1, n_test1);
+            printf("Результат: ");
+            for (uint32_t i = 0; i < n_test1; ++i) printf("%d ", test_arr1[i]);
+            printf("\n");
+        }
+        
+        {
+            if (pSink2 != 0) pSink2->m_iStep = 0;
+            int test_arr2[] = {4, 7, 2};
+            uint32_t n_test2 = sizeof(test_arr2)/sizeof(test_arr2[0]);
+            printf("Тест сортировки на объекте 2 (Sink2 слушает): ");
+            for (uint32_t i = 0; i < n_test2; ++i) printf("%d ", test_arr2[i]);
+            printf("\n");
+            pIEcoLab1_2->pVTbl->BucketSortInt(pIEcoLab1_2, test_arr2, n_test2);
+            printf("Результат: ");
+            for (uint32_t i = 0; i < n_test2; ++i) printf("%d ", test_arr2[i]);
+            printf("\n");
+        }
+        
+        {
+            if (pSink3 != 0) pSink3->m_iStep = 0;
+            int test_arr3[] = {8, 1, 5};
+            uint32_t n_test3 = sizeof(test_arr3)/sizeof(test_arr3[0]);
+            printf("Тест сортировки на объекте 3 (Sink3 слушает): ");
+            for (uint32_t i = 0; i < n_test3; ++i) printf("%d ", test_arr3[i]);
+            printf("\n");
+            pIEcoLab1_3->pVTbl->BucketSortInt(pIEcoLab1_3, test_arr3, n_test3);
+            printf("Результат: ");
+            for (uint32_t i = 0; i < n_test3; ++i) printf("%d ", test_arr3[i]);
+            printf("\n\n");
+        }
+        
+        /* Отключение всех sink'ов */
+        if (pSink1 != 0 && pSink1->Unadvise != 0) {
+            pSink1->Unadvise(pSink1, pIEcoLab1);
+        }
+        if (pSink2 != 0 && pSink2->Unadvise != 0) {
+            pSink2->Unadvise(pSink2, pIEcoLab1_2);
+        }
+        if (pSink3 != 0 && pSink3->Unadvise != 0) {
+            pSink3->Unadvise(pSink3, pIEcoLab1_3);
+        }
+    }
+    
+    printf("========== Конец демонстрации схем подключения ==========\n\n");
+    
+    /* Подключение одного sink'а для основных тестов */
+    if (pSink1 != 0 && pSink1->Advise != 0) {
+        pSink1->Advise(pSink1, pIEcoLab1);
+        printf("Events connected successfully for main tests\n");
+    }
+
     /* ---------------- Bucket sort tests ---------------- */
     {
+        if (pSink1 != 0) {
+            pSink1->m_iStep = 0;
+        }
         int a_i[] = {5, -1, 3, 3, 2, 9, 0, -4, 1};
         uint32_t n_i = sizeof(a_i)/sizeof(a_i[0]);
         printf("Before int sort: ");
@@ -212,6 +445,9 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
         printf("\n");
     }
     {
+        if (pSink1 != 0) {
+            pSink1->m_iStep = 0;
+        }
         long a_l[] = {100000L, -2L, 42L, 0L, 7L, 7L, -100L};
         uint32_t n_l = sizeof(a_l)/sizeof(a_l[0]);
         printf("Before long sort: ");
@@ -223,6 +459,9 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
         printf("\n");
     }
     {
+        if (pSink1 != 0) {
+            pSink1->m_iStep = 0;
+        }
         float a_f[] = {3.14f, -2.5f, 0.0f, 1.0f, 1.0f, 10.5f, -7.25f};
         uint32_t n_f = sizeof(a_f)/sizeof(a_f[0]);
         printf("Before float sort: ");
@@ -234,6 +473,9 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
         printf("\n");
     }
     {
+        if (pSink1 != 0) {
+            pSink1->m_iStep = 0;
+        }
         double a_d[] = {2.718, -3.0, 0.0, 123.456, 1.618, -0.001};
         uint32_t n_d = sizeof(a_d)/sizeof(a_d[0]);
         printf("Before double sort: ");
@@ -245,6 +487,9 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
         printf("\n");
     }
     {
+        if (pSink1 != 0) {
+            pSink1->m_iStep = 0;
+        }
         long double a_ld[] = { (long double)1.0, (long double)-1.0, (long double)0.0, (long double)3.0, (long double)-2.0 };
         uint32_t n_ld = sizeof(a_ld)/sizeof(a_ld[0]);
         printf("Before long double sort: ");
@@ -256,6 +501,46 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
         printf("\n");
     }
 
+
+    /* ---------------- Отключение событий ---------------- */
+    if (pSink1 != 0 && pIEvents1 != 0) {
+        if (pSink1->Unadvise != 0) {
+            pSink1->Unadvise(pSink1, pIEcoLab1);
+        }
+        pIEvents1->pVTbl->Release(pIEvents1);
+        pIEvents1 = 0;
+        pSink1 = 0;
+    }
+    if (pSink2 != 0 && pIEvents2 != 0) {
+        if (pSink2->Unadvise != 0) {
+            if (pIEcoLab1_2 != 0) {
+                pSink2->Unadvise(pSink2, pIEcoLab1_2);
+            }
+        }
+        pIEvents2->pVTbl->Release(pIEvents2);
+        pIEvents2 = 0;
+        pSink2 = 0;
+    }
+    if (pSink3 != 0 && pIEvents3 != 0) {
+        if (pSink3->Unadvise != 0) {
+            if (pIEcoLab1_3 != 0) {
+                pSink3->Unadvise(pSink3, pIEcoLab1_3);
+            }
+        }
+        pIEvents3->pVTbl->Release(pIEvents3);
+        pIEvents3 = 0;
+        pSink3 = 0;
+    }
+    
+    /* Освобождение дополнительных объектов */
+    if (pIEcoLab1_2 != 0) {
+        pIEcoLab1_2->pVTbl->Release(pIEcoLab1_2);
+        pIEcoLab1_2 = 0;
+    }
+    if (pIEcoLab1_3 != 0) {
+        pIEcoLab1_3->pVTbl->Release(pIEcoLab1_3);
+        pIEcoLab1_3 = 0;
+    }
 
     /* Освлбождение блока памяти */
     pIMem->pVTbl->Free(pIMem, name);
@@ -276,7 +561,6 @@ Release:
     if (pIEcoLab1 != 0) {
         pIEcoLab1->pVTbl->Release(pIEcoLab1);
     }
-
 
     /* Освобождение системного интерфейса */
     if (pISys != 0) {

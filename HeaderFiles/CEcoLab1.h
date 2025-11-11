@@ -21,8 +21,12 @@
 #define __C_ECOLAB1_H__
 
 #include "IEcoLab1.h"
+#include "IEcoLab1Events.h"
 #include "IEcoSystem1.h"
 #include "IdEcoMemoryManager1.h"
+#include "IEcoEnumConnections.h"
+#include "IEcoConnectionPointContainer.h"
+#include "CEcoLab1ConnectionPoint.h"
 /* Aggregated calculator interface */
 #include "../Eco.CalculatorB/SharedFiles/IEcoCalculatorX.h"
 /* Aggregated calculator Y interface */
@@ -38,6 +42,8 @@ typedef struct CEcoLab1 {
     /* Таблица функций интерфейса IEcoLab1 */
     IEcoLab1VTbl* m_pVTblIEcoLab1;
 
+    /* Таблица функций интерфейса IEcoConnectionPointContainer */
+    IEcoConnectionPointContainerVTbl* m_pVTblICPC;
 
     /* Счетчик ссылок */
     uint32_t m_cRef;
@@ -47,6 +53,9 @@ typedef struct CEcoLab1 {
 
     /* Системный интерфейс */
     IEcoSystem1* m_pISys;
+
+    /* Точка подключения */
+    CEcoLab1ConnectionPoint* m_pISinkCP;
 
     /* Данные экземпляра */
     char_t* m_Name;
